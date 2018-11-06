@@ -83,6 +83,12 @@ public class IndoNumeroController {
     	try
     	{
     	int num = Integer.parseInt(numS);
+    	if (num<1 || num>NMAX)
+    	{
+    		// fuori range
+    		txtLog.appendText("Valore fuori dall'intervallo consentito\n");
+    		return;
+    	}
     	// numero è un intero
     	if (num==this.segreto)
     		{
