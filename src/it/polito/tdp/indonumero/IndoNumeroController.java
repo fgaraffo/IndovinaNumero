@@ -1,6 +1,7 @@
 /**
  * Sample Skeleton for 'IndoNumero.fxml' Controller Class
  * gestire algoritmo di gioco ed interfaccia utente
+ * soluzione prova
  */
 
 package it.polito.tdp.indonumero;
