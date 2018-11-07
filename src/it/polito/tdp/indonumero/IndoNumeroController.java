@@ -17,13 +17,7 @@ import javafx.scene.layout.HBox;
 
 public class IndoNumeroController {
 
-    private int NMAX = 100;
-    private int TMAX = 7;
-	
-	private int segreto; // numero da indovinare
-	private int tentativi; // tentativi già fatti
-	
-	private boolean inGame = false;
+    private Model model;
 	
 	@FXML // ResourceBundle that was given to the FXMLLoader
     private ResourceBundle resources;
@@ -52,26 +46,25 @@ public class IndoNumeroController {
     @FXML
     void handleNuova(ActionEvent event) {
 
-    	this.segreto = (int) (Math.random()*NMAX)+1;
-    	
-    	this.tentativi = 0;
-    	this.inGame = true;
+    	model.newGame();
     	
     	btnNuova.setDisable(true);
     	boxGioco.setDisable(false);
-    	txtCurr.setText(String.format("%d", this.tentativi));
-    	txtMax.setText(String.format("%d", this.TMAX));
+    	txtCurr.setText(String.format("%d", model.getTentativi()));
+    	txtMax.setText(String.format("%d", model.getTMAX()));
     	
     	txtTentativo.clear();
     	txtLog.clear();
     	
-    	txtLog.setText(String.format("Indovina un numero tra %d e %d\n", 1, NMAX));
+    	txtLog.setText(String.format("Indovina un numero tra %d e %d\n", 1, model.getNMAX()));
     	
     }
 
     @FXML
-    void handleProva(ActionEvent event) {
+    void handleProva(ActionEvent event)
+    {
 
+    	// PRENDERE I DATI, VALIDARLI
     	String numS = txtTentativo.getText();
     	
     	if(numS.length()==0)
@@ -83,61 +76,58 @@ public class IndoNumeroController {
     	try
     	{
     	int num = Integer.parseInt(numS);
-    	if (num<1 || num>NMAX)
+    	
+    	if (!model.valoreValido(num))
     	{
     		// fuori range
     		txtLog.appendText("Valore fuori dall'intervallo consentito\n");
     		return;
     	}
-    	// numero è un intero
-    	if (num==this.segreto)
-    		{
-    			// ha indovinato
-    			txtLog.appendText("Hai vinto!\n");
-    			// chiudere la partita
-    			btnNuova.setDisable(false);
-    			boxGioco.setDisable(true);
-    			inGame = false;
-    		}
+    	
+    	int risultato = model.tentativo(num);
+    	txtCurr.setText(String.format("%d", model.getTentativi()));
+    	
+    	if (risultato==0)
+    	{	
+    		// ha indovinato
+			txtLog.appendText("Hai vinto!\n");
+    	}
+    	else if (risultato<0)
+    	{
+    		// troppo basso
+			txtLog.appendText("Troppo basso\n");
+    	}
     	else
     	{
-    		// tentativo errato
-    		this.tentativi++;
-    		txtCurr.setText(String.format("%d", this.tentativi));
-    		if (this.tentativi==this.TMAX)
-    		{
-    			// ha perso
-    			txtLog.appendText(String.format("Hai perso! Il numero era: %d\n", this.segreto));
-    			// chiudi partita
-    			btnNuova.setDisable(false);
-    			boxGioco.setDisable(true);
-    			inGame = false;
-    		}
-    		else
-    		{
-    			// ancora in gioco
-    			if (num<this.segreto)
-    			{
-    				// troppo basso
-    				txtLog.appendText("Troppo basso\n");
-    			}
-    			else
-    			{
-    				// troppo alto
-    				txtLog.appendText("Troppo alto\n");
-    			}
-   			}
+    		// troppo alto
+			txtLog.appendText("Troppo alto\n");
     	}
-    	}
-    	catch (NumberFormatException e)
+    	
+    	if (!model.isInGame())
     	{
-    		// se non è intero
-    		txtLog.appendText("Il dato inserito non è numerico\n");
-    		return;
+    		// partita finita (vittoria o sconfitta)
+    		if (risultato!=0)
+    		{	
+    			txtLog.appendText("Hai perso!\n");
+    			txtLog.appendText(String.format("Il numero segreto era: %d\n", model.getSegreto()));
+    		}
+    		// chiudi partita
+    		btnNuova.setDisable(false);
+    		boxGioco.setDisable(true);
+    	
     	}
-    		
+    	    	
     	
     }
+    catch (NumberFormatException e)
+    {
+    	// se non è intero
+    	txtLog.appendText("Il dato inserito non è numerico\n");
+    	return;
+    }
+    		
+    	
+   }
 
     @FXML // This method is called by the FXMLLoader when initialization is complete
     void initialize() {
@@ -149,4 +139,9 @@ public class IndoNumeroController {
         assert txtLog != null : "fx:id=\"txtLog\" was not injected: check your FXML file 'IndoNumero.fxml'.";
 
     }
+
+    public void setModel(Model model) {
+		this.model = model;
+	}
+
 }
