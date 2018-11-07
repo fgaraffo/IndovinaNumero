@@ -2,13 +2,17 @@ package it.polito.tdp.indonumero;
 
 import java.security.InvalidParameterException;
 
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+
 public class Model {
 
 	private int NMAX = 100;
     private int TMAX = 7;
 	
 	private int segreto; // numero da indovinare
-	private int tentativi; // tentativi già fatti
+//	private int tentativi; // tentativi già fatti
+	private IntegerProperty tentativi = new SimpleIntegerProperty();
 	
 	private boolean inGame = false;
 	
@@ -23,7 +27,8 @@ public class Model {
 	public void newGame() 
 	{
 		this.segreto = (int) (Math.random()*NMAX)+1;
-    	this.tentativi = 0;
+		// aggiorna il valore della property ma aggiorna anche tutti gli osservatori(propaga)
+		this.tentativi.set(0);
     	this.inGame = true;
 	}
 	
@@ -39,8 +44,8 @@ public class Model {
 		if (!valoreValido(t))
 			throw new InvalidParameterException("Tentativo fuori range");
 		
-		this.tentativi++;
-		if (this.tentativi == this.TMAX)
+		this.tentativi.set(this.tentativi.get()+1);
+		if (this.tentativi.get() == this.TMAX)
 			this.inGame = false;
 		
 		if (t==this.segreto)
@@ -67,11 +72,6 @@ public class Model {
 		return inGame;
 	}
 
-	public int getTentativi ()
-	{
-		return this.tentativi;
-	}
-	
 	public int getNMAX() {
 		return NMAX;
 	}
@@ -84,4 +84,15 @@ public class Model {
 	{
 		return this.segreto;
 	}
+	
+	public final IntegerProperty tentativiProperty()
+	{
+		return this.tentativi;
+	}
+	
+	public final int getTentativi ()
+	{
+		return this.tentativiProperty().get();
+	}
+		
 }
